@@ -1,0 +1,107 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Bar } from "recharts";
+
+const generateQuestion = () => {
+  const num1 = Math.floor(Math.random() * 10);
+  const num2 = Math.floor(Math.random() * 10);
+  const sum = num1 + num2;
+  return {
+    question: `${num1} + ${num2} = ?`,
+    isOdd: sum % 2 !== 0,
+  };
+};
+
+export default function Psychotest() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [questions, setQuestions] = useState(
+    Array.from({ length: 20 }, () => Array.from({ length: 100 }, generateQuestion))
+  );
+  const [answers, setAnswers] = useState(Array(20).fill([]));
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [results, setResults] = useState(null);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      nextSlide();
+    }
+  }, [timeLeft]);
+
+  const handleAnswer = (index, answer) => {
+    const newAnswers = [...answers];
+    newAnswers[currentSlide][index] = answer;
+    setAnswers(newAnswers);
+  };
+
+  const nextSlide = () => {
+    if (currentSlide < 19) {
+      setCurrentSlide(currentSlide + 1);
+      setTimeLeft(60);
+    } else {
+      calculateResults();
+    }
+  };
+
+  const calculateResults = () => {
+    let correct = 0;
+    let total = 0;
+    answers.forEach((slide, slideIndex) => {
+      slide.forEach((answer, index) => {
+        if (answer !== undefined) {
+          total++;
+          if (answer === (questions[slideIndex][index].isOdd ? 1 : 0)) {
+            correct++;
+          }
+        }
+      });
+    });
+    setResults({ correct, total });
+  };
+
+  if (results) {
+    return (
+      <div className="text-center p-4">
+        <h1 className="text-2xl font-bold">Hasil Tes</h1>
+        <p>Jumlah Soal yang Benar: {results.correct}</p>
+        <p>Total Soal Dijawab: {results.total}</p>
+        <p>Persentase Benar: {((results.correct / results.total) * 100).toFixed(2)}%</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <h1 className="text-xl font-bold">Bagian {currentSlide + 1}</h1>
+      <Progress value={(timeLeft / 60) * 100} className="mb-2" />
+      <p>Sisa Waktu: {timeLeft}s</p>
+      <div className="grid gap-2">
+        {questions[currentSlide].map((q, index) => (
+          <div key={index} className="flex items-center space-x-2">
+            <p>{index + 1}. {q.question}</p>
+            <label>
+              <input
+                type="radio"
+                name={`q${index}`}
+                value="1"
+                onChange={() => handleAnswer(index, 1)}
+              /> Ganjil
+            </label>
+            <label>
+              <input
+                type="radio"
+                name={`q${index}`}
+                value="0"
+                onChange={() => handleAnswer(index, 0)}
+              /> Genap
+            </label>
+          </div>
+        ))}
+      </div>
+      <Button onClick={nextSlide} className="mt-4">Lewati</Button>
+    </div>
+  );
+}
