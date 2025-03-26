@@ -6,7 +6,7 @@ export default function StartScreen({ onStart }) {
   const [input, setInput] = useState("");
 
   const handleStart = () => {
-    if (input.trim().toLowerCase() === "mulai") {
+    if (input.toLowerCase().trim() === "mulai") {
       onStart();
     }
   };
@@ -14,15 +14,13 @@ export default function StartScreen({ onStart }) {
   return (
     <div className="flex flex-col items-center justify-center h-screen space-y-4">
       <h1 className="text-2xl font-bold">Selamat Datang di Psikotest Ganjil Genap</h1>
-      <p>Ketik <strong>"MULAI"</strong> untuk memulai</p>
-      <Input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Ketik MULAI di sini..."
+      <p>Ketik <span className="font-semibold">"MULAI"</span> untuk memulai</p>
+      <Input 
+        value={input} 
+        onChange={(e) => setInput(e.target.value)} 
+        placeholder="Ketik MULAI di sini..." 
       />
-      <Button onClick={handleStart} disabled={!input.trim()}>
-        Mulai
-      </Button>
+      <Button onClick={handleStart}>Mulai</Button>
     </div>
   );
 }
